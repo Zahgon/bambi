@@ -34,8 +34,7 @@ def cloglog(mu):
 
 def invcloglog(eta):
     """Inverse of the cloglog function that ensures result is in (0, 1)."""
-    result = 1 - np.exp(-np.exp(eta))
-    return force_within_unit_interval(result)
+    pass
 
 
 def probit(mu):
@@ -46,15 +45,12 @@ def probit(mu):
 
 def invprobit(eta):
     """Inverse of the probit function that ensures result is in (0, 1)."""
-    result = 0.5 + 0.5 * special.erf(eta / 2**0.5)  # pylint: disable=no-member
-    return force_within_unit_interval(result)
+    pass
 
 
 def expit(eta):
     """Expit function that ensures result is in (0, 1)."""
-    result = special.expit(eta)  # pylint: disable=no-member
-    result = force_within_unit_interval(result)
-    return result
+    pass
 
 
 def logit(mu):
@@ -74,15 +70,15 @@ def inverse_squared(mu):
 
 
 def inv_inverse_squared(eta):
-    return 1 / np.sqrt(eta)
+    pass
 
 
 def inverse(mu):
-    return 1 / mu
+    pass
 
 
 def inv_inverse(eta):
-    return 1 / eta
+    pass
 
 
 def link_not_implemented(*args, **kwargs):

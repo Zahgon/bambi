@@ -6,7 +6,7 @@ from formulae.transforms import register_stateful_transform
 
 def c(*args):
     """Concatenate columns into a 2D NumPy Array."""
-    return np.column_stack(args)
+    pass
 
 
 def censored(*args):
@@ -342,21 +342,7 @@ class HSGP:  # pylint: disable = too-many-instance-attributes
             - If one dimensional, it behaves as `Sequence[int]`
             - If two dimensional, it behaves as `Sequence[Sequence[int]]`
         """
-        value = np.asarray(value)
-        shape = value.shape
-        if len(shape) == 0:
-            output = np.tile(value, (groups_n, variables_n))
-        elif len(shape) == 1:
-            if shape != (variables_n,):
-                raise ValueError("1D sequences must be of shape (variables_n, )")
-            output = np.tile(value, (groups_n, 1))
-        elif len(shape) == 2:
-            if shape != (groups_n, variables_n):
-                raise ValueError("2D sequences must be of shape (groups_n, variables_n)")
-            output = value
-        else:
-            raise ValueError(f"Wrong shape: {shape}")
-        return output
+        pass
 
 
 def as_matrix(x):
@@ -377,12 +363,7 @@ def as_matrix(x):
     ValueError
         If the input has more than two dimensions.
     """
-    x = np.atleast_1d(x)
-    if x.ndim == 1:
-        return x[:, np.newaxis]
-    elif x.ndim > 2:
-        raise ValueError("'x.ndim' cannot be > 2")
-    return x
+    pass
 
 
 def mean_by_group(values, group):
@@ -402,13 +383,7 @@ def mean_by_group(values, group):
         An array with the mean values for all the variables, per group, if there's a group.
         It's of shape (groups_n, variables_n).
     """
-    if group is None:
-        return np.mean(values, axis=0)
-    levels = np.unique(group)
-    means = np.zeros((len(levels), values.shape[1]))
-    for i, level in enumerate(levels):
-        means[i] = np.mean(values[group == level], axis=0)
-    return means
+    pass
 
 
 def get_distance(x):
@@ -418,11 +393,7 @@ def get_distance(x):
     variables. The output is an array of shape `(n, n)` where the values represent the Euclidean
     distance between observations considering all the `p` variables.
     """
-    x = as_matrix(x)
-    out = 0
-    for i in range(x.shape[1]):
-        out = out + np.subtract.outer(x[:, i], x[:, i]) ** 2
-    return np.sqrt(out)
+    pass
 
 
 # These functions are made available in the namespace where the model formula is evaluated

@@ -85,9 +85,7 @@ class CommonTerm:
 
     @property
     def name(self):
-        if self.term.alias:
-            return self.term.alias
-        return self.term.name
+        pass
 
 
 class GroupSpecificTerm:
@@ -109,17 +107,7 @@ class GroupSpecificTerm:
 
     @property
     def coords(self):
-        coords = self.term.coords.copy()
-        # If there's no alias, return the coords from the underlying term
-        if not self.term.alias:
-            return coords
-
-        # If there's an alias, create a coords where the name is based on the alias
-        new_coords = {}
-        for key, value in coords.items():
-            _, kind = key.split("__")
-            new_coords[self.term.alias + "__" + kind] = value
-        return new_coords
+        pass
 
     def build(self, spec):
         """Build term.
@@ -212,9 +200,7 @@ class GroupSpecificTerm:
 
     @property
     def name(self):
-        if self.term.alias:
-            return self.term.alias
-        return self.term.name
+        pass
 
 
 class InterceptTerm:
@@ -256,9 +242,7 @@ class InterceptTerm:
 
     @property
     def name(self):
-        if self.term.alias:
-            return self.term.alias
-        return self.term.name
+        pass
 
 
 class ResponseTerm:
@@ -443,9 +427,7 @@ class ResponseTerm:
 
     @property
     def name(self):
-        if self.term.alias:
-            return self.term.alias
-        return self.term.name
+        pass
 
     def robustify_dims(self, pymc_backend, kwargs):
         # It's possible the observed for the response is multidimensional,
@@ -674,6 +656,4 @@ class HSGPTerm:
 
     @property
     def name(self):
-        if self.term.alias:
-            return self.term.alias
-        return self.term.name
+        pass

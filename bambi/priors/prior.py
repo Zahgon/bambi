@@ -64,11 +64,4 @@ class Prior:
 
 
 def format_arg(value, decimals):
-    try:
-        outcome = np.round(value, decimals)
-    except:  # pylint: disable = bare-except
-        try:
-            outcome = value.name
-        except:  # pylint: disable = bare-except
-            outcome = value
-    return outcome
+    pass

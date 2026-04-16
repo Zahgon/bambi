@@ -35,7 +35,7 @@ class ConstantComponent:
         self.spec = spec
 
     def update_priors(self, value):
-        self.prior = value
+        pass
 
 
 class DistributionalComponent:
@@ -72,49 +72,16 @@ class DistributionalComponent:
             self.add_group_specific_terms(priors)
 
     def add_common_terms(self, priors):
-        for name, term in self.design.common.terms.items():
-            if is_hsgp_term(term):
-                continue
-            prior = priors.pop(name, priors.get("common", None))
-            if isinstance(prior, Prior):
-                any_hyperprior = any(isinstance(x, Prior) for x in prior.args.values())
-                if any_hyperprior:
-                    raise ValueError(
-                        f"Trying to set hyperprior on '{name}'. "
-                        "Can't set a hyperprior on common effects."
-                    )
-
-            if term.kind == "offset":
-                self.terms[name] = OffsetTerm(term, self.prefix)
-            else:
-                self.terms[name] = CommonTerm(term, prior, self.prefix)
+        pass
 
     def add_group_specific_terms(self, priors):
-        for name, term in self.design.group.terms.items():
-            prior = priors.pop(name, priors.get("group_specific", None))
-            self.terms[name] = GroupSpecificTerm(term, prior, self.prefix)
+        pass
 
     def add_hsgp_terms(self, priors):
-        for name, term in self.design.common.terms.items():
-            if is_hsgp_term(term):
-                prior = priors.pop(name, None)
-                self.terms[name] = HSGPTerm(term, prior, self.prefix)
+        pass
 
     def build_priors(self):
-        for term in self.terms.values():
-            if isinstance(term, GroupSpecificTerm):
-                kind = "group_specific"
-            elif isinstance(term, CommonTerm) and term.kind == "intercept":
-                kind = "intercept"
-            elif hasattr(term, "kind") and term.kind == "offset":
-                continue
-            elif isinstance(term, HSGPTerm):
-                if term.prior is None:
-                    term.prior = get_default_prior("hsgp", cov_func=term.cov)
-                continue
-            else:
-                kind = "common"
-            term.prior = prepare_prior(term.prior, kind, self.spec.auto_scale)
+        pass
 
     def update_priors(self, priors):
         """Update priors.
@@ -124,8 +91,7 @@ class DistributionalComponent:
         priors : dict
             Names are terms, values are priors
         """
-        for name, value in priors.items():
-            self.terms[name].prior = value
+        pass
 
     def predict(
         self,
@@ -495,46 +461,32 @@ class DistributionalComponent:
 
     @property
     def group_specific_groups(self):
-        groups = {}
-        for term_name in self.group_specific_terms:
-            factor = term_name.split("|")[1]
-            if factor not in groups:
-                groups[factor] = [term_name]
-            else:
-                groups[factor].append(term_name)
-        return groups
+        pass
 
     @property
     def intercept_term(self):
         """Return the intercept term in the model component."""
-        for term in self.terms.values():
-            if isinstance(term, CommonTerm) and term.kind == "intercept":
-                return term
-        return None
+        pass
 
     @property
     def common_terms(self):
         """Return dict of all common effects in the model component."""
-        return {
-            k: v
-            for (k, v) in self.terms.items()
-            if isinstance(v, CommonTerm) and not isinstance(v, OffsetTerm) and v.kind != "intercept"
-        }
+        pass
 
     @property
     def group_specific_terms(self):
         """Return dict of all group specific effects in model component."""
-        return {k: v for (k, v) in self.terms.items() if isinstance(v, GroupSpecificTerm)}
+        pass
 
     @property
     def offset_terms(self):
         """Return dict of all offset effects in model."""
-        return {k: v for (k, v) in self.terms.items() if isinstance(v, OffsetTerm)}
+        pass
 
     @property
     def hsgp_terms(self):
         """Return dict of all HSGP terms in model."""
-        return {k: v for (k, v) in self.terms.items() if isinstance(v, HSGPTerm)}
+        pass
 
 
 class ResponseComponent:
@@ -545,25 +497,7 @@ class ResponseComponent:
         self._init_response()
 
     def _init_response(self):
-        response = self.response
-
-        if hasattr(response.term.term.components[0], "reference"):
-            reference = response.term.term.components[0].reference
-        else:
-            reference = None
-
-        # This is a historical feature.
-        # It's not clear how many family specific checks should be added here
-        if reference is not None and not isinstance(self.spec.family, univariate.Bernoulli):
-            raise ValueError("Index notation for response is only available for 'bernoulli' family")
-
-        if isinstance(self.spec.family, univariate.Bernoulli):
-            if response.kind == "categoric" and response.levels is None and reference is None:
-                raise ValueError("Categoric response must be binary for 'bernoulli' family.")
-            if response.kind == "numeric" and not all(np.isin(response.design_matrix, (0, 1))):
-                raise ValueError("Numeric response must be all 0 and 1 for 'bernoulli' family.")
-
-        self.term = ResponseTerm(response, self.spec.family)
+        pass
 
 
 def prepare_prior(prior, kind, auto_scale):
@@ -583,13 +517,4 @@ def prepare_prior(prior, kind, auto_scale):
     prior : Prior
         The prior.
     """
-    if prior is None:
-        if auto_scale:
-            prior = get_default_prior(kind)
-        else:
-            prior = get_default_prior(kind + "_flat")
-    elif isinstance(prior, Prior):
-        prior.auto_scale = False
-    else:
-        raise ValueError("'prior' must be instance of Prior or `None`.")
-    return prior
+    pass

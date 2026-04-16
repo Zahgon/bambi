@@ -59,35 +59,20 @@ class Likelihood:
 
     @property
     def params(self):
-        return self._params
+        pass
 
     @params.setter
     def params(self, value):
-        if self.name in self.DISTRIBUTIONS:
-            if value is None:
-                value = self.DISTRIBUTIONS[self.name].params
-            elif set(value) != set(self.DISTRIBUTIONS[self.name].params):
-                raise ValueError(f"'{value}' does not match the parameters of '{self.name}'")
-        # Otherwise, no check is done. At your own risk!
-        self._params = value
+        pass
 
     @property
     def parent(self):
-        return self._parent
+        pass
 
     @parent.setter
     def parent(self, value):
         # Checks are made when using a known distribution
-        if self.name in self.DISTRIBUTIONS:
-            if value is None:
-                value = self.DISTRIBUTIONS[self.name].parent
-            elif value not in self.DISTRIBUTIONS[self.name].params:
-                raise ValueError(
-                    f"'{value}' is not a valid parameter for the likelihood '{self.name}'"
-                )
-        elif value not in self.params:
-            raise ValueError(f"'{value}' must be one of {self.params}")
-        self._parent = value
+        pass
 
     def __str__(self):
         args = [

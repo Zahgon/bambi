@@ -52,33 +52,14 @@ class Multinomial(MultivariateFamily):
         )
 
     def log_likelihood(self, model, posterior, data, **kwargs):
-        if data is None:
-            y = model.response_component.term.data
-            trials = model.response_component.term.data.sum(1).astype(int)
-        else:
-            y = response_evaluate_new_data(model, data).astype(int)
-            trials = y.sum(1).astype(int)
-
-        # Prepend 'draw' and 'chain' dimensions
-        y = y[np.newaxis, np.newaxis, :]
-        trials = trials[np.newaxis, np.newaxis, :]
-
-        dont_reshape = ["n"]
-        return super().log_likelihood(
-            model, posterior, data=None, y=y, n=trials, dont_reshape=dont_reshape, **kwargs
-        )
+        pass
 
     def get_coords(self, response):
         # For the moment, it always uses the first column as reference.
-        name = get_aliased_name(response) + "_reduced_dim"
-        labels = self.get_levels(response)
-        return {name: labels[1:]}
+        pass
 
     def get_levels(self, response):
-        labels = extract_argument_names(response.name, list(transformations_namespace))
-        if labels:
-            return labels
-        return [str(level) for level in range(response.data.shape[1])]
+        pass
 
     @staticmethod
     def transform_backend_kwargs(kwargs):
@@ -118,32 +99,13 @@ class DirichletMultinomial(MultivariateFamily):
         )
 
     def log_likelihood(self, model, posterior, data, **kwargs):
-        if data is None:
-            y = model.response_component.term.data
-            trials = model.response_component.term.data.sum(1).astype(int)
-        else:
-            y = response_evaluate_new_data(model, data).astype(int)
-            trials = y.sum(1).astype(int)
-
-        # Prepend 'draw' and 'chain' dimensions
-        y = y[np.newaxis, np.newaxis, :]
-        trials = trials[np.newaxis, np.newaxis, :]
-
-        dont_reshape = ["n"]
-        return super().log_likelihood(
-            model, posterior, data=None, y=y, n=trials, dont_reshape=dont_reshape, **kwargs
-        )
+        pass
 
     def get_coords(self, response):
-        name = get_aliased_name(response) + "_dim"
-        labels = self.get_levels(response)
-        return {name: labels}
+        pass
 
     def get_levels(self, response):
-        labels = extract_argument_names(response.name, list(transformations_namespace))
-        if labels:
-            return labels
-        return [str(level) for level in range(response.data.shape[1])]
+        pass
 
     @staticmethod
     def transform_backend_kwargs(kwargs):

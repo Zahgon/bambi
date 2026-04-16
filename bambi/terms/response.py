@@ -15,63 +15,48 @@ class ResponseTerm(BaseTerm):
 
     @property
     def term(self):
-        return self._term
+        pass
 
     @term.setter
     def term(self, value):
-        assert isinstance(value, formulae.terms.terms.Term)
-        self._term = value
+        pass
 
     @property
     def data(self):
-        if hasattr(self.family, "get_data"):
-            return self.family.get_data(self)
-        return self.term.data
+        pass
 
     @property
     def name(self):
-        return self.term.name
+        pass
 
     @property
     def shape(self):
-        return self.data.shape
+        pass
 
     @property
     def levels(self):
-        if hasattr(self.family, "get_levels"):
-            return self.family.get_levels(self)
-        return self.term.levels
+        pass
 
     @property
     def categorical(self):
-        return self.term.kind == "categoric"
+        pass
 
     @property
     def reference(self):
-        if hasattr(self.family, "get_reference"):
-            return self.family.get_reference(self)
-        return None
+        pass
 
     @property
     def coords(self):
-        if hasattr(self.family, "get_coords"):
-            return self.family.get_coords(self)
-        return {}
+        pass
 
     @property
     def success(self):
-        if hasattr(self.family, "get_success_level"):
-            return self.family.get_success_level(self)
-        return None
+        pass
 
     @property
     def binary(self):
         # Maybe it's not needed here anymore
-        if self.categorical:
-            if self.term.levels is None:
-                return True
-            return len(self.term.levels) == 2
-        return None
+        pass
 
     def __str__(self):
         extras = []

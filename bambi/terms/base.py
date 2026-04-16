@@ -37,43 +37,26 @@ class BaseTerm(ABC):
 
     @property
     def alias(self):
-        return self._alias
+        pass
 
     @alias.setter
     def alias(self, value):
-        assert isinstance(value, str), "Alias must be a string"
-        self._alias = value
+        pass
 
     @property
     def prior(self):
-        return self._prior
+        pass
 
     @prior.setter
     def prior(self, value):
-        assert isinstance(value, VALID_PRIORS), f"Prior must be one of {VALID_PRIORS}"
-        self._prior = value
+        pass
 
     @property
     def ndim(self):
-        return len(self.shape)
+        pass
 
     def make_str(self, extras=None):
-        args = [
-            f"name: {self.name}",
-            f"prior: {self.prior}",
-            f"shape: {self.shape}",
-            f"categorical: {self.categorical}",
-        ]
-
-        if self.alias:
-            args[0] = f"{args[0]} (alias: {self.alias})"
-
-        if self.categorical:
-            args += [f"levels: {self.levels}"]
-
-        if extras:
-            args += extras
-        return f"{self.__class__.__name__}({indentify(multilinify(args))}\n)"
+        pass
 
     def __str__(self):
         return self.make_str()

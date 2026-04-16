@@ -21,32 +21,12 @@ DefaultStrategy = Callable[[Series], Series]
 
 def _comparison_defaults(series: Series) -> Series:
     """Generate default contrast values based on dtype."""
-    match series.dtype:
-        case pd.CategoricalDtype():
-            # For default categorical dtypes, return all the unique categories
-            return pd.Series(series.cat.categories, name=series.name).astype(series.dtype)
-        case dtype if is_float_dtype(dtype):
-            mean = series.mean()
-            return pd.Series([mean - 0.5, mean + 0.5], name=series.name).astype(dtype)
-        case dtype if is_integer_dtype(dtype):
-            mode = series.mode().iloc[0]
-            return pd.Series([mode - 1, mode + 1], name=series.name).astype(dtype)
-        case _:
-            raise TypeError(f"Unsupported dtype for contrast: {series.dtype}")
+    pass
 
 
 def _conditional_defaults(series: Series) -> Series:
     """Generate default conditional values based on dtype."""
-    match series.dtype:
-        case pd.CategoricalDtype():
-            return pd.Series(series.cat.categories, name=series.name).astype(series.dtype)
-        case dtype if is_float_dtype(dtype):
-            xs = np.linspace(series.min(), series.max(), num=50)
-            return pd.Series(xs, name=series.name).astype(dtype)
-        case dtype if is_integer_dtype(dtype):
-            return pd.Series(series.unique(), name=series.name).astype(dtype)
-        case _:
-            raise TypeError(f"Unsupported dtype for conditional: {series.dtype}")
+    pass
 
 
 def _slope_defaults(series: Series, eps: float) -> Series:
@@ -66,15 +46,7 @@ def _slope_defaults(series: Series, eps: float) -> Series:
 
 def _default_defaults(series: Series) -> Series:
     """Generate default values (mode for categorical/integer, mean for float)."""
-    match series.dtype:
-        case pd.CategoricalDtype():
-            return pd.Series(series.mode().iloc[0], name=series.name)
-        case dtype if is_float_dtype(dtype):
-            return pd.Series(series.mean(), name=series.name)
-        case dtype if is_integer_dtype(dtype):
-            return pd.Series(series.mode().iloc[0], name=series.name)
-        case _:
-            raise TypeError(f"Unsupported dtype for default: {series.dtype}")
+    pass
 
 
 def _resolve_values(
@@ -251,7 +223,7 @@ class ConditionalVariables:
     @property
     def names(self) -> set[str]:
         """Return the set of variable names."""
-        return {v.name for v in self.variables}
+        pass
 
 
 @dataclass(frozen=True)

@@ -65,23 +65,12 @@ class Family:
 
     @property
     def link(self):
-        return self._link
+        pass
 
     @link.setter
     def link(self, value):
         # The name of the link function. It's applied to the parent parameter of the likelihood
-        if isinstance(value, (str, Link)):
-            value = {self.likelihood.parent: value}
-        links = {}
-        for name, link in value.items():
-            if isinstance(link, str):
-                link = self.check_string_link(link, name)
-            elif isinstance(link, Link):
-                pass
-            else:
-                raise ValueError("'.link' must be set to a string or a Link instance.")
-            links[name] = link
-        self._link = links
+        pass
 
     @property
     def auxiliary_parameters(self):
@@ -95,21 +84,11 @@ class Family:
         set
             Names of auxiliary parameters in the family
         """
-        return set(self.likelihood.params) - {self.likelihood.parent}
+        pass
 
     def check_string_link(self, link_name, param_name):
         # When you instantiate Family directly
-        if isinstance(self.SUPPORTED_LINKS, list):
-            supported_links = self.SUPPORTED_LINKS
-        else:
-            supported_links = self.SUPPORTED_LINKS[param_name]
-
-        if not link_name in supported_links:
-            raise ValueError(
-                f"Link '{link_name}' cannot be used for '{param_name}' with family "
-                f"'{self.name}'"
-            )
-        return Link(link_name)
+        pass
 
     def set_default_priors(self, priors):
         """Set default priors for non-parent parameters
@@ -195,37 +174,7 @@ class Family:
             A data array with the value of the log-likelihood for each chain, draw, and value
             of the response variable.
         """
-        # Child classes pass "y_values" through the "y" kwarg
-        y_values = kwargs.pop("y", None)
-
-        # Get the values of the outcome variable
-        if y_values is None:  # when it's not handled by the specific family
-            if data is None:
-                y_values = np.squeeze(model.response_component.term.data)
-            else:
-                y_values = response_evaluate_new_data(model, data)
-
-        response_dist = get_response_dist(model.family)
-        response_term = model.response_component.term
-        kwargs, coords = self._make_dist_kwargs_and_coords(model, posterior, **kwargs)
-
-        # If it's multivariate, it's going to have a fourth coord, but we actually don't need it
-        # We just need "chain", "draw", "__obs__"
-        coords = dict(list(coords.items())[:3])
-
-        # Handle constrained responses
-        if response_term.is_constrained:
-            # Bounds are scalars, we can safely pick them from the first row
-            lower, upper = response_term.data[0, 1:]
-            lower = lower if lower != -np.inf else None
-            upper = upper if upper != np.inf else None
-            output_array = pm.logp(
-                pm.Truncated.dist(response_dist.dist(**kwargs), lower=lower, upper=upper), y_values
-            ).eval()
-        else:
-            output_array = pm.logp(response_dist.dist(**kwargs), y_values).eval()
-
-        return xr.DataArray(output_array, coords=coords)
+        pass
 
     def _make_dist_kwargs_and_coords(self, model, posterior, **kwargs):
         """Get kwargs and coordinates

@@ -26,61 +26,49 @@ class CommonTerm(BaseTerm):
 
     @property
     def term(self):
-        return self._term
+        pass
 
     @term.setter
     def term(self, value):
-        assert isinstance(value, (formulae.terms.terms.Term, formulae.terms.terms.Intercept))
-        self._term = value
+        pass
 
     @property
     def name(self):
-        if self.prefix:
-            return f"{self.prefix}_{self.term.name}"
-        return self.term.name
+        pass
 
     @property
     def coords(self):
         # Obtain pymc coordinates, only for categorical components of a term.
         # A categorical component can have up to two coordinates in the same model if it is
         # includied with both reduced and full rank encodings.
-        coords = {}
-        if self.categorical:
-            name = self.name + "_dim"
-            coords[name] = self.levels
-        elif self.data.ndim > 1 and self.data.shape[1] > 1:
-            name = self.name + "_dim"
-            coords[name] = np.arange(self.data.shape[1])
-        return coords
+        pass
 
     @property
     def data(self):
-        return self._data
+        pass
 
     @data.setter
     def data(self, value):
-        self._data = value
+        pass
 
     @property
     def kind(self):
-        return self.term.kind
+        pass
 
     @property
     def shape(self):
-        return self.data.shape
+        pass
 
     @property
     def categorical(self):
         # If the term has one component, it's categorical if the component is categorical.
         # If the term has more than one component (i.e. it is an interaction), it's categorical if
         # at least one of the components is categorical.
-        if self.kind == "interaction":
-            return any(component.kind == "categoric" for component in self.term.components)
-        return self.kind == "categoric"
+        pass
 
     @property
     def levels(self):
-        return self.term.levels
+        pass
 
     def __str__(self):
         args = []

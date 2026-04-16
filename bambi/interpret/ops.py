@@ -41,7 +41,7 @@ def ratio(reference: DataArray, contrast: DataArray) -> DataArray:
     DataArray
         The ratio: contrast / reference
     """
-    return contrast / reference
+    pass
 
 
 def lift(reference: DataArray, contrast: DataArray) -> DataArray:
@@ -59,7 +59,7 @@ def lift(reference: DataArray, contrast: DataArray) -> DataArray:
     DataArray
         The lift: (contrast - reference) / reference
     """
-    return (contrast - reference) / reference
+    pass
 
 
 COMPARISON_TYPES: dict[str, ComparisonFunc] = {
@@ -128,7 +128,7 @@ def dydx(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
     DataArray
         The unscaled derivative (identity).
     """
-    return derivative
+    pass
 
 
 def eyex(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
@@ -148,7 +148,7 @@ def eyex(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
     DataArray
         The elasticity: (dy/dx) * (x / y)
     """
-    return derivative * (x / y)
+    pass
 
 
 def eydx(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
@@ -168,7 +168,7 @@ def eydx(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
     DataArray
         The semi-elasticity: (dy/dx) / y
     """
-    return derivative / y
+    pass
 
 
 def dyex(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
@@ -188,7 +188,7 @@ def dyex(derivative: DataArray, x: DataArray, y: DataArray) -> DataArray:
     DataArray
         The scaled derivative: (dy/dx) * x
     """
-    return derivative * x
+    pass
 
 
 SLOPE_TYPES: dict[str, SlopeFunc] = {

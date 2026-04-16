@@ -23,73 +23,54 @@ class GroupSpecificTerm(BaseTerm):  # pylint: disable=too-many-instance-attribut
 
         Only used when `bmb.config.SPARSE_DOT` is `False`.
         """
-        # NOTE: This asummes there's a single '1' per row, which is true.
-        return dummies.argmax(1)
+        pass
 
     @property
     def term(self):
-        return self._term
+        pass
 
     @term.setter
     def term(self, value):
-        assert isinstance(value, formulae.terms.terms.GroupSpecificTerm)
-        self._term = value
+        pass
 
     @property
     def coords(self):
         # The group is _always_ added as a coordinate. Maybe there's a cleaner way
-        coords = {}
-        expr, factor = self.name.split("|")
-        coords[factor + "__factor_dim"] = self.groups
-
-        if self.categorical:
-            coords[expr + "__expr_dim"] = self.term.expr.levels
-        elif self.predictor.ndim == 2 and self.predictor.shape[1] > 1:
-            coords[expr + "__expr_dim"] = np.arange(self.predictor.shape[1])
-        return coords
+        pass
 
     @property
     def data(self):
-        return self._data
+        pass
 
     @data.setter
     def data(self, value):
-        self._data = value
+        pass
 
     @property
     def name(self):
-        if self.prefix:
-            return f"{self.prefix}_{self.term.name}"
-        return self.term.name
+        pass
 
     @property
     def kind(self):
-        return self.term.kind
+        pass
 
     @property
     def shape(self):
-        return self.data.shape
+        pass
 
     @property
     def categorical(self):
         # Determine if the expression is categorical
-        if self.kind == "interaction":
-            return any(component.kind == "categoric" for component in self.term.expr.components)
-        return self.kind == "categoric"
+        pass
 
     @property
     def prior(self):
-        return self._prior
+        pass
 
     @prior.setter
     def prior(self, value):
         # This does not check which argument has hyperprior (must be dispersion?)
-        assert isinstance(value, VALID_PRIORS), f"Prior must be one of {VALID_PRIORS}"
-        if isinstance(value, Prior):
-            any_hyperprior = any(isinstance(x, Prior) for x in value.args.values())
-            if not any_hyperprior:
-                raise ValueError("Prior for group-specific terms must have hyperpriors")
-        self._prior = value
+        pass
 
     @property
     def groups(self):
@@ -97,25 +78,23 @@ class GroupSpecificTerm(BaseTerm):  # pylint: disable=too-many-instance-attribut
 
     @property
     def levels(self):
-        return self.term.labels
+        pass
 
     @property
     def predictor(self):
-        return self.term.expr.data
+        pass
 
     @property
     def grouper(self):
-        return self.term.factor.data
+        pass
 
     @property
     def hyperprior_alias(self):
-        return self._hyperprior_alias
+        pass
 
     @hyperprior_alias.setter
     def hyperprior_alias(self, values):
-        assert all(isinstance(x, str) for x in values.keys())
-        assert all(isinstance(x, str) for x in values.values())
-        self._hyperprior_alias.update(values)
+        pass
 
     def __str__(self):
         args = [f"groups: {self.groups}"]

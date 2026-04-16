@@ -316,50 +316,7 @@ class Model:
             It returns an `InferenceData` if `inference_method` is `"pymc"`, `"nutpie"`,
             `"blackjax"`, `"numpyro"`, or `"laplace"`, and an `Approximation` object if  `"vi"`.
         """
-        method = kwargs.pop("method", None)
-        if method is not None:
-            if inference_method == "vi":
-                kwargs["method"] = method
-            else:
-                warnings.warn(
-                    "the method argument has been deprecated, please use inference_method",
-                    FutureWarning,
-                )
-                inference_method = method
-
-        if not self.built:
-            self.build()
-
-        # Tell user which event is being modeled
-        if isinstance(self.family, univariate.Bernoulli):
-            _log.info(
-                "Modeling the probability that %s==%s",
-                self.response_component.term.name,
-                str(self.response_component.term.success),
-            )
-
-        if include_mean is not None:
-            warnings.warn(
-                "'include_mean' has been replaced by 'include_response_params' and "
-                "is not going to work in the future",
-                FutureWarning,
-            )
-            include_response_params = include_mean
-
-        return self.backend.run(
-            draws=draws,
-            tune=tune,
-            discard_tuned_samples=discard_tuned_samples,
-            omit_offsets=omit_offsets,
-            include_response_params=include_response_params,
-            inference_method=inference_method,
-            init=init,
-            n_init=n_init,
-            chains=chains,
-            cores=cores,
-            random_seed=random_seed,
-            **kwargs,
-        )
+        pass
 
     def build(self):
         """Set up the model for sampling/fitting
@@ -383,71 +340,18 @@ class Model:
         group_specific : Prior, int, float or None, optional
             A prior specification to apply to all group specific terms included in the model.
         """
-        kwargs = dict(zip(["priors", "common", "group_specific"], [priors, common, group_specific]))
-        self._added_priors.update(kwargs)
-        self._build_priors()  # After updating, we need to rebuild priors.
-        self.built = False
+        pass
 
     def _build_priors(self):
         """Carry out all operations related to the construction and/or scaling of priors."""
-        # Set custom priors that have been passed via `Model.set_priors()`
-        self._set_priors(**self._added_priors)
-
-        # Prepare all priors
-        for component in self.distributional_components.values():
-            component.build_priors()
-
-        for name, component in self.constant_components.items():
-            if isinstance(component.prior, Prior):
-                component.prior.auto_scale = False
-            elif isinstance(component.prior, (int, float)):
-                continue
-            elif component.prior is not None:
-                raise ValueError(f"'{component.prior}' is not a valid prior.")
-            else:
-                default_prior = self.family.default_priors.get(name, None)
-                if default_prior is None:
-                    raise ValueError(f"The component '{name}' needs a prior.")
-                component.prior = default_prior
-
-        # Scale priors if there is at least one term in the model and auto_scale is True
-        if self.auto_scale:
-            self.scaler = PriorScaler(self)
-            self.scaler.scale()
+        pass
 
     def _set_priors(self, priors=None, common=None, group_specific=None):
         """Internal version of `set_priors()`, with same arguments.
 
         Runs during `Model._build_priors()`.
         """
-        # 'common' and 'group_specific' only apply to the parent component
-        parent_component = self.components[self.family.likelihood.parent]
-        if common is not None:
-            for term in parent_component.common_terms.values():
-                term.prior = common
-
-        if group_specific is not None:
-            for term in parent_component.group_specific_terms.values():
-                term.prior = group_specific
-
-        if priors is not None:
-            priors = deepcopy(priors)
-
-            # The only distributional component is the parent term
-            if len(self.distributional_components) == 1:
-                # Update priors of the constant components
-                for name, component in self.constant_components.items():
-                    prior = priors.pop(name) if name in priors else None
-                    if prior:
-                        component.update_priors(prior)
-                # Pass all the other priors to the parent component
-                parent_component.update_priors(priors)
-            # There are more than one distributional components.
-            else:
-                for name, component in self.components.items():
-                    prior = priors.get(name)
-                    if prior:
-                        component.update_priors(prior)
+        pass
 
     def _set_family(self, family, link):
         """Set the Family of the model
@@ -470,28 +374,7 @@ class Model:
         -------
         `None`
         """
-
-        # If string, get builtin family
-        if isinstance(family, str):
-            family = get_builtin_family(family)
-
-        # Always ensure family is indeed instance of Family
-        if not isinstance(family, Family):
-            raise ValueError("'family' must be a string or a Family object.")
-
-        # Override family's link if another is explicitly passed
-        # If `link` is string, we assume it wants to override only the `parent` parameter
-        if link is not None:
-            if isinstance(link, str):
-                links = family.link.copy()
-                links[family.likelihood.parent] = link
-            elif isinstance(link, dict):
-                links = link
-            else:
-                raise ValueError("'link' must be of type 'str' or 'dict'.")
-            family.link = links
-
-        self.family = family
+        pass
 
     def set_alias(self, aliases):
         """Set aliases for the terms and auxiliary parameters in the model
@@ -505,117 +388,11 @@ class Model:
         -------
         `None`
         """
-        if not isinstance(aliases, dict):
-            raise ValueError(f"'aliases' must be a dictionary, not a {type(aliases)}.")
-
-        # Keep track of any passed aliases that are not used
-        missing_names = []
-
-        # If there is a single distributional component (the response)
-        #   * Keys are the names of the terms and the values are their aliases.
-        # If there are multiple distributional components
-        #   * Keys are the name of the components responses
-        #     * If it's a constant component, the value must be a string
-        #     * If it's a distributional component, the value must be a dictionary
-        #        * Here, names are term names, and values are their aliases
-        #     * There's unavoidable redundancy in the response name
-        #       "sigma": {"sigma": "alias"}}
-        if len(self.distributional_components) == 1:  # pylint: disable=too-many-nested-blocks
-            parent_component = self.components[self.family.likelihood.parent]
-            for name, alias in aliases.items():
-                assert isinstance(alias, str)
-
-                # Monitor if this particular alias is used
-                is_used = False
-
-                # If it's the name of the parent parameter
-                if name == self.family.likelihood.parent:
-                    parent_component.alias = alias
-                    is_used = True
-
-                if name in self.constant_components:
-                    assert isinstance(alias, str)
-                    self.constant_components[name].alias = alias
-                    is_used = True
-
-                # If it's a term name
-                if name in parent_component.terms:
-                    parent_component.terms[name].alias = alias
-                    is_used = True
-
-                # Now add aliases for hyperpriors in group specific terms
-                for term in parent_component.group_specific_terms.values():
-                    if name in term.prior.args:
-                        term.hyperprior_alias = {name: alias}
-                        is_used = True
-
-                # If it's the name of the response
-                if name == self.response_component.response.name:
-                    self.response_component.term.alias = alias
-                    is_used = True
-
-                # Add any aliases not used in prior logic to unused alias list
-                if is_used is False:
-                    missing_names.append(name)
-        else:
-            for component_name, component_aliases in aliases.items():
-                if component_name in self.constant_components:
-                    assert isinstance(component_aliases, str)
-                    self.constant_components[component_name].alias = component_aliases
-                elif component_name == self.response_component.response.name:
-                    assert isinstance(component_aliases, str)
-                    self.response_component.term.alias = component_aliases
-                else:
-                    assert isinstance(component_aliases, dict)
-                    assert component_name in self.distributional_components
-                    component = self.distributional_components[component_name]
-                    for name, alias in component_aliases.items():
-                        is_used = False
-
-                        if name in component.terms:
-                            component.terms[name].alias = alias
-                            is_used = True
-
-                        # Useful for non-response distributional components
-                        if name == component.name:
-                            component.alias = alias
-                            is_used = True
-
-                        for term in component.group_specific_terms.values():
-                            if name in term.prior.args:
-                                term.hyperprior_alias = {name: alias}
-                                is_used = True
-
-                        # Add any aliases not used in prior logic to unused alias list
-                        if is_used is False:
-                            missing_names.append(name)
-
-        # Report unused aliases
-        if missing_names:
-            # If only a few, tell user explicitly which aren't used
-            if len(missing_names) <= 5:
-                warnings.warn(
-                    "The following names do not match any terms, their aliases were "
-                    f"not assigned: {', '.join(missing_names)}",
-                    UserWarning,
-                )
-            # If many, throw a generic warning
-            else:
-                warnings.warn(
-                    f"There are {len(missing_names)} names that do not match any terms, "
-                    "so their aliases were not assigned.",
-                    UserWarning,
-                )
-        # Model needs to be rebuilt after modifying aliases
-        self.built = False
+        pass
 
     def _check_built(self):
         # Checks if model is built, raises ValueError if not
-        if not self.built:
-            raise ValueError(
-                "Model is not built yet! "
-                "Call .build() to build the model or .fit() to build and sample from the posterior."
-            )
+        pass
 
     def plot_priors(
         self,
@@ -713,108 +490,7 @@ class Model:
         pc : arviz_plots.PlotCollection
 
         """
-        self._check_built()
-
-        if stats is None:
-            stats = {}
-        else:
-            stats = stats.copy()
-            stats["dist"] = stats.get("dist", {}).copy()
-
-        unobserved_rvs_names = []
-        flat_rvs = []
-
-        if hdi_prob is not None:
-            warnings.warn(
-                "'hdi_prob' has been renamed to 'ci_prob' and will be removed in future versions",
-                FutureWarning,
-            )
-            ci_prob = hdi_prob
-
-        if bins is not None:
-            warnings.warn(
-                """'bins' argument is deprecated and will be removed in future versions
-                please use `stats={"dist": {"bins": bins}}`
-                """,
-                FutureWarning,
-            )
-            stats.get("dist", {}).setdefault("bins", bins)
-
-        if round_to is not None:
-            warnings.warn(
-                """'round_to' argument is deprecated and will be removed in future versions
-                please use `stats={"dist": {"round_to": round_to}}`""",
-                FutureWarning,
-            )
-            stats.get("dist", {}).setdefault("round_to", round_to)
-
-        if pc_kwargs is None:
-            pc_kwargs = {}
-
-        pc_kwargs["figure_kwargs"] = pc_kwargs.get("figure_kwargs", {}).copy()
-        if figsize is not None:
-            pc_kwargs["figure_kwargs"]["figsize"] = figsize
-
-        for unobserved in self.backend.model.unobserved_RVs:
-            if "Flat" in str(unobserved):
-                flat_rvs.append(unobserved.name)
-            else:
-                # Don't include deterministics that go into the likelihood (e.g. 'mu' normal model)
-                is_likelihood_param = unobserved.name in self.family.likelihood.params
-                is_deterministic = unobserved in self.backend.model.deterministics
-                if is_likelihood_param and is_deterministic:
-                    continue
-                unobserved_rvs_names.append(unobserved.name)
-
-        if var_names is None:
-            var_names = pm.util.get_default_varnames(
-                unobserved_rvs_names, include_transformed=False
-            )
-        else:
-            flat_rvs = [fv for fv in flat_rvs if fv in var_names]
-            var_names = [vn for vn in var_names if vn not in flat_rvs]
-
-        if flat_rvs:
-            _log.info(
-                "Variables %s have flat priors, and hence they are not plotted", ", ".join(flat_rvs)
-            )
-
-        if omit_offsets:
-            var_names = [name for name in var_names if not name.endswith("_offset")]
-
-        if omit_group_specific:
-            group_specific_var_names = [
-                name
-                for component in self.distributional_components.values()
-                for name in component.group_specific_terms
-            ]
-            var_names = [name for name in var_names if name not in group_specific_var_names]
-
-        pc = None
-        if var_names:
-            # Sort variable names so Intercept is in the beginning
-            if "Intercept" in var_names:
-                var_names.insert(0, var_names.pop(var_names.index("Intercept")))
-            pps = self.prior_predictive(draws=draws, var_names=var_names, random_seed=random_seed)
-
-            pc = plot_dist(
-                pps,
-                group="prior",
-                var_names=var_names,
-                filter_vars=filter_vars,
-                kind=kind,
-                point_estimate=point_estimate,
-                ci_kind=ci_kind,
-                ci_prob=ci_prob,
-                plot_collection=plot_collection,
-                backend=backend,
-                labeller=labeller,
-                aes_by_visuals=aes_by_visuals,
-                visuals=visuals,
-                stats=stats,
-                **pc_kwargs,
-            )
-        return pc
+        pass
 
     def prior_predictive(self, draws=500, var_names=None, omit_offsets=True, random_seed=None):
         """Generate samples from the prior predictive distribution.
@@ -837,25 +513,7 @@ class Model:
             `InferenceData` object with the groups `prior`, `prior_predictive` and
             `observed_data`.
         """
-        self._check_built()
-
-        if var_names is None:
-            variables = self.backend.model.unobserved_RVs + self.backend.model.observed_RVs
-            variables_names = [v.name for v in variables]
-            var_names = pm.util.get_default_varnames(variables_names, include_transformed=False)
-
-        if omit_offsets:
-            var_names = [name for name in var_names if not name.endswith("_offset")]
-
-        idata = pm.sample_prior_predictive(
-            samples=draws, var_names=var_names, model=self.backend.model, random_seed=random_seed
-        )
-
-        for group in idata.groups():
-            getattr(idata, group).attrs["modeling_interface"] = "bambi"
-            getattr(idata, group).attrs["modeling_interface_version"] = __version__
-
-        return idata
+        pass
 
     def predict(
         self,
@@ -995,16 +653,7 @@ class Model:
         .. [1] Gelman et al. *R-squared for Bayesian regression models*.
             The American Statistician. 73(3) (2019). <https://doi.org/10.1080/00031305.2018.1549100>
         """
-        response_name = self.response_component.term.name
-        pred_mean = self.family.likelihood.parent
-
-        if pred_mean not in idata.posterior:
-            self.predict(idata, kind="response_params", inplace=True)
-
-        # We should change this to use bayesian_r2 ensuring we pass the correct scale for each
-        # family we could use residual_r2 as a fallback for families we don't have implemented
-        # yet we may want to have an argument to compute the loo_r2 as well or a separate method
-        return residual_r2(idata, pred_mean=pred_mean, obs_name=response_name, summary=summary)
+        pass
 
     def compute_log_likelihood(self, idata, data=None, inplace=True):
         """Compute the model's log-likelihood
@@ -1027,43 +676,7 @@ class Model:
         -------
         InferenceData or None
         """
-
-        # These are not formal parameters because it does not make sense to...
-        #   1. compute the log-likelihood omitting the group-specific components of the model.
-        #   2. compute the log-likelihood on unseen groups.
-        include_group_specific = True
-        sample_new_groups = False
-
-        # Get the aliased response name
-        response_aliased_name = get_aliased_name(self.response_component.term)
-
-        if not inplace:
-            idata = deepcopy(idata)
-
-        # Populate the posterior in the InferenceData object with the likelihood parameters
-        idata = self._compute_likelihood_params(
-            idata=idata,
-            data=data,
-            include_group_specific=include_group_specific,
-            sample_new_groups=sample_new_groups,
-        )
-
-        required_kwargs = {"model": self, "posterior": idata.posterior, "data": data}
-        log_likelihood = self.family.log_likelihood(**required_kwargs)
-        log_likelihood = log_likelihood.to_dataset(name=response_aliased_name)
-
-        if "log_likelihood" in idata:
-            del idata.log_likelihood
-
-        idata.add_groups({"log_likelihood": log_likelihood})
-        idata.log_likelihood = idata.log_likelihood.assign_attrs(
-            modeling_interface="bambi", modeling_interface_version=__version__
-        )
-
-        if inplace:
-            return None
-        else:
-            return idata
+        pass
 
     def _compute_likelihood_params(
         self,
@@ -1161,32 +774,15 @@ class Model:
         model.graph()
         ```
         """
-        self._check_built()
-
-        graphviz = pm.model_to_graphviz(model=self.backend.model, formatting=formatting)
-
-        width, height = (None, None) if figsize is None else figsize
-
-        if name is not None:
-            graphviz_ = graphviz.copy()
-            graphviz_.graph_attr.update(size=f"{width},{height}!")
-            graphviz_.graph_attr.update(dpi=str(dpi))
-            graphviz_.render(filename=name, format=fmt, cleanup=True)
-
-        return graphviz
+        pass
 
     @property
     def formula(self):
-        return self._formula
+        pass
 
     @formula.setter
     def formula(self, value):
-        if isinstance(value, str):
-            self._formula = Formula(value)
-        elif isinstance(value, Formula):
-            self._formula = value
-        else:
-            raise ValueError("'.formula' must be instance of 'str' or 'bambi.Formula'")
+        pass
 
     def __str__(self):
         # Empty list with the output components
@@ -1255,11 +851,11 @@ class Model:
 
     @property
     def constant_components(self):
-        return {k: v for k, v in self.components.items() if isinstance(v, ConstantComponent)}
+        pass
 
     @property
     def distributional_components(self):
-        return {k: v for k, v in self.components.items() if isinstance(v, DistributionalComponent)}
+        pass
 
 
 def with_categorical_cols(data: pd.DataFrame, columns) -> pd.DataFrame:
@@ -1267,56 +863,19 @@ def with_categorical_cols(data: pd.DataFrame, columns) -> pd.DataFrame:
 
     It converts all object columns plus columns specified in the `columns` argument.
     """
-    # Convert 'object' and explicitly asked columns to categorical.
-    object_columns = list(data.select_dtypes("object").columns)
-    to_convert = list(set(object_columns + listify(columns)))
-    if to_convert:
-        data = data.copy()  # don't modify original data frame
-        data[to_convert] = data[to_convert].apply(lambda x: x.astype("category"))
-    return data
+    pass
 
 
 def prior_repr(term) -> str:
     """Get a string representation of a Bambi term."""
-    return f"{term.name} ~ {term.prior}"
+    pass
 
 
 def hsgp_repr(term) -> str:
     """Get a string representation of a Bambi HSGP term."""
-    output_list = [f"cov: {term.cov}", *[f"{key} ~ {value}" for key, value in term.prior.items()]]
-    output_list = ["    " + element for element in output_list]
-    output_list.insert(0, term.name)
-    return "\n".join(output_list)
+    pass
 
 
 def make_priors_summary(component: DistributionalComponent) -> str:
     """Get a summary of terms and priors in a distributional component."""
-    # Common effects
-    priors_common = [
-        prior_repr(term) for term in component.common_terms.values() if term.kind != "offset"
-    ]
-    if component.intercept_term:
-        priors_common.insert(0, prior_repr(component.intercept_term))
-
-    # Group-specific effects
-    priors_group = [prior_repr(term) for term in component.group_specific_terms.values()]
-
-    # Offsets
-    offsets = [f"{term.name} ~ 1" for term in component.offset_terms.values()]
-
-    # HSGP
-    hsgp = [hsgp_repr(term) for term in component.hsgp_terms.values()]
-
-    priors_dict = {
-        "Common-level effects": priors_common,
-        "Group-level effects": priors_group,
-        "Offset effects": offsets,
-        "HSGP contributions": hsgp,
-    }
-
-    priors_list = []
-    for group, priors in priors_dict.items():
-        if priors:
-            priors_list.append(group + "\n" + wrapify(indentify("\n".join(priors), 4), 100, 4))
-
-    return "\n\n".join(priors_list)
+    pass

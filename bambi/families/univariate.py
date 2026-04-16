@@ -23,18 +23,7 @@ class BinomialBaseFamily(UnivariateFamily):
         return super().posterior_predictive(model, posterior, n=trials, random_seed=random_seed)
 
     def log_likelihood(self, model, posterior, data, **kwargs):
-        if data is None:
-            y = model.response_component.term.data[:, 0]
-            trials = model.response_component.term.data[:, 1]
-        else:
-            output = response_evaluate_new_data(model, data).astype(int)
-            y = output[:, 0]
-            trials = output[:, 1]
-
-        # Prepend 'draw' and 'chain' dimensions
-        y = y[np.newaxis, np.newaxis, :]
-        trials = trials[np.newaxis, np.newaxis, :]
-        return super().log_likelihood(model, posterior, data=None, y=y, n=trials, **kwargs)
+        pass
 
     @staticmethod
     def transform_backend_kwargs(kwargs):
@@ -57,15 +46,10 @@ class Bernoulli(UnivariateFamily):
     SUPPORTED_LINKS = {"p": ["identity", "logit", "probit", "cloglog"]}
 
     def get_data(self, response):
-        if response.term.data.ndim == 1:
-            return response.term.data
-        idx = response.levels.index(response.success)
-        return response.term.data[:, idx]
+        pass
 
     def get_success_level(self, response):
-        if response.categorical:
-            return get_success_level(response.term)
-        return 1
+        pass
 
 
 class Beta(UnivariateFamily):
@@ -150,14 +134,13 @@ class Categorical(UnivariateFamily):
         return mean
 
     def get_data(self, response):
-        return np.nonzero(response.term.data)[1]
+        pass
 
     def get_coords(self, response):
-        name = get_aliased_name(response) + "_reduced_dim"
-        return {name: [level for level in response.levels if level != response.reference]}
+        pass
 
     def get_reference(self, response):
-        return get_reference_level(response.term)
+        pass
 
     @staticmethod
     def transform_backend_eta(eta, kwargs):
@@ -176,7 +159,7 @@ class Cumulative(UnivariateFamily):
     SUPPORTED_LINKS = {"p": ["logit", "probit", "cloglog"], "threshold": ["identity"]}
 
     def get_data(self, response):
-        return np.nonzero(response.term.data)[1]
+        pass
 
     @staticmethod
     def transform_linear_predictor(
@@ -349,7 +332,7 @@ class StoppingRatio(UnivariateFamily):
     SUPPORTED_LINKS = {"p": ["logit", "probit", "cloglog"], "threshold": ["identity"]}
 
     def get_data(self, response):
-        return np.nonzero(response.term.data)[1]
+        pass
 
     @staticmethod
     def transform_linear_predictor(
@@ -499,18 +482,7 @@ def get_success_level(term):
 
     Whenever the concept of "success level" does not apply, it returns `None`.
     """
-    if term.kind != "categoric":
-        return None
-
-    if term.levels is None:
-        return term.components[0].reference
-
-    levels = term.levels
-    intermediate_data = term.components[0]._intermediate_data
-    if hasattr(intermediate_data, "_contrast"):
-        return intermediate_data._contrast.reference
-
-    return levels[0]
+    pass
 
 
 # pylint: disable = protected-access
@@ -519,15 +491,4 @@ def get_reference_level(term):
 
     Whenever the concept of "reference level" does not apply, it returns `None`.
     """
-    if term.kind != "categoric":
-        return None
-
-    if term.levels is None:
-        return None
-
-    levels = term.levels
-    intermediate_data = term.components[0]._intermediate_data
-    if hasattr(intermediate_data, "_contrast"):
-        return intermediate_data._contrast.reference
-
-    return levels[0]
+    pass

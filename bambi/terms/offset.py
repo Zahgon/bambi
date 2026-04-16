@@ -18,19 +18,19 @@ class OffsetTerm(CommonTerm):
 
     @property
     def kind(self):
-        return "offset"
+        pass
 
     @property
     def categorical(self):
-        return False
+        pass
 
     @property
     def levels(self):
-        return []
+        pass
 
     @property
     def coords(self):
-        return {}
+        pass
 
     def __str__(self):
         return self.make_str()

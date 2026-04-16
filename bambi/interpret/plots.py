@@ -189,8 +189,7 @@ def _get_interval_pairs(data: DataFrame, base_alpha: float) -> list[tuple[str, s
     # are indeed the correct intervals
     def _pct(col: str) -> float:
         """Parse the percentage from column names to pair them"""
-        m = re.search(r"([\d.]+)%", col)
-        return float(m.group(1)) if m else 0.0
+        pass
 
     # Sort lower cols by percentage ascending (smallest % = widest interval)
     lower_cols.sort(key=_pct)

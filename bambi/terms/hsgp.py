@@ -61,124 +61,77 @@ class HSGPTerm(BaseTerm):
         names : sequence of str
             The names of the attributes taken from `self.hsgp_attributes`
         """
-
-        def get(self, name):
-            return self.hsgp_attributes[name]
-
-        for name in names:
-            get_partial = partial(get, name=name)
-            setattr(self.__class__, name, property(get_partial))
+        pass
 
     @property
     def term(self):
-        return self._term
+        pass
 
     @term.setter
     def term(self, value):
-        assert isinstance(value, formulae.terms.terms.Term)
-        self._term = value
+        pass
 
     @property
     def data(self):
-        if self.by_levels is None:
-            data = self.term.data
-        else:
-            data = self.term.data[:, :-1]
-        return data
+        pass
 
     @property
     def shape(self):
-        if self.by_levels is None:
-            return self.term.data.shape
-        else:
-            return self.term.data[:, :-1].shape
+        pass
 
     @property
     def data_centered(self):
-        if self.by_levels is None:
-            output = self.data - self.mean
-        else:
-            output = self.data - self.mean[self.by]
-        return output
+        pass
 
     @property
     def m(self):
         """Get the value of 'm', the number of basis vectors
         It's of shape (term.variables_n, ). It's computed by variable.
         """
-        return np.atleast_1d(np.squeeze(self.hsgp_attributes["m"]))
+        pass
 
     @property
     def L(self):
         """Get the value of L
         It's of shape (term.groups_n, term.variables_n). It's computed by variable and group.
         """
-        if self.c is not None:
-            if self.by_levels is None:
-                S = np.max(np.abs(self.data - self.mean), axis=0)
-            else:
-                S = np.zeros_like(self.c, dtype="float")
-                for i in range(len(self.by_levels)):
-                    S[i] = np.max(np.abs(self.data_centered[self.by == i]), axis=0)
-            return S * self.c
-        return self.hsgp_attributes["L"]
+        pass
 
     @property
     def by(self):
-        if self.by_levels is not None:
-            return self.term.data[:, -1].astype(int)
-        return None
+        pass
 
     @property
     def prior(self):
-        return self._prior
+        pass
 
     @prior.setter
     def prior(self, value):
-        message = (
-            "The priors for an HSGP term must be passed within a dictionary. "
-            "Keys must the names of the parameters of the covariance function "
-            "and values are instances of `bambi.Prior` or numeric constants."
-        )
-        if value is None:
-            self._prior = value
-        else:
-            if not isinstance(value, dict):
-                raise ValueError(message)
-            for prior in value.values():
-                assert isinstance(prior, GP_VALID_PRIORS), f"Prior must be one of {GP_VALID_PRIORS}"
-            self._prior = value
+        pass
 
     @property
     def scale_predictors(self):
         # If scale is None, look if it uses automatic priors.
         #  If automatic priors are used, it will scale the data
         #  If automatic priors are not used, it won't scale the data
-        if self.scale is None:
-            return self.automatic_priors
-        return self.scale
+        pass
 
     @property
     def coords(self):
         # This handles univariate and multivariate cases
-        coords = {f"{self.name}_weights_dim": np.arange(np.prod(self.m))}
-        if self.by_levels is not None:
-            coords[f"{self.name}_by"] = self.by_levels
-        return coords
+        pass
 
     @property
     def name(self):
-        if self.prefix:
-            return f"{self.prefix}_{self.term.name}"
-        return self.term.name
+        pass
 
     @property
     def categorical(self):
-        return False
+        pass
 
     @property
     def levels(self):
-        return None
+        pass
 
 
 def get_hsgp_attributes(term):
@@ -194,24 +147,4 @@ def get_hsgp_attributes(term):
     dict
         The attributes that will be passed to pm.gp.HSGP
     """
-    names = (
-        "m",
-        "L",
-        "c",
-        "by_levels",
-        "cov",
-        "share_cov",
-        "scale",
-        "iso",
-        "drop_first",
-        "centered",
-        "mean",
-        "variables_n",
-        "groups_n",
-        "maximum_distance",
-    )
-    attrs_original = term.components[0].call.stateful_transform.__dict__
-    attrs = {}
-    for name in names:
-        attrs[name] = attrs_original[name]
-    return attrs
+    pass

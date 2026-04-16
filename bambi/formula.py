@@ -38,9 +38,7 @@ class Formula:
         additionals : sequence of str
             If all formulas match the required format, it returns them.
         """
-        for additional in additionals:
-            self.check_additional(additional)
-        return additionals
+        pass
 
     def check_additional(self, additional: str):
         """Check if an additional formula matches the expected format
@@ -57,17 +55,7 @@ class Formula:
         ValueError
             If the response term is not a plain name.
         """
-        response = fm.model_description(additional).response
-
-        # There's a response in the formula
-        if response is None:
-            raise ValueError("Additional formulas must contain a response name.")
-
-        # The response is a name, not a function call, for example
-        if not isinstance(response.term.components[0], fm.terms.variable.Variable):
-            raise ValueError("The response must be a name")
-
-        self.additionals_lhs.append(response.term.name)
+        pass
 
     def get_all_formulas(self):
         """Get all the model formulas
@@ -77,7 +65,7 @@ class Formula:
         list of str
             All the formulas in the instance.
         """
-        return [self.main] + list(self.additionals)
+        pass
 
     def __str__(self):
         formulas = [self.main] + list(self.additionals)

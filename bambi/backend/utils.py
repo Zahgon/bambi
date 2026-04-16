@@ -30,11 +30,7 @@ def horseshoe(name, tau_nu=3, lam_nu=1, dims=None):
     pm.Deterministic
         Deterministic PyMC variable representing coefficients with a horseshoe prior.
     """
-    tau = pm.HalfStudentT(f"{name}_tau", nu=tau_nu)
-    lam = pm.HalfStudentT(f"{name}_lam", nu=lam_nu, dims=dims)
-    beta_raw = pm.Normal(f"{name}_raw", 0, 1, dims=dims)
-    beta = pm.Deterministic(name, beta_raw * tau * lam, dims=dims)
-    return beta
+    pass
 
 
 MAPPING = {"Cumulative": pm.Categorical, "StoppingRatio": pm.Categorical, "Horseshoe": horseshoe}
@@ -92,15 +88,15 @@ def get_linkinv(link, invlinks):
 
 
 def exp_quad(sigma, ell, input_dim=1):
-    return sigma**2 * pm.gp.cov.ExpQuad(input_dim, ls=ell)
+    pass
 
 
 def matern32(sigma, ell, input_dim=1):
-    return sigma**2 * pm.gp.cov.Matern32(input_dim, ls=ell)
+    pass
 
 
 def matern52(sigma, ell, input_dim=1):
-    return sigma**2 * pm.gp.cov.Matern52(input_dim, ls=ell)
+    pass
 
 
 GP_KERNELS = {
@@ -151,8 +147,7 @@ def get_dist_args(dist: pm.Distribution) -> list[str]:
 
 def create_cdist(dist: pm.Distribution):
     def fun(*params):
-        *dist_params, size = params
-        return dist.dist(*dist_params, size=size)
+        pass
 
     return fun
 
